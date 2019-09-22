@@ -40,7 +40,7 @@ ConnnectionsModule is an independent SocialApp component that manages all connec
 * allow a user to be deleted from SocialApp.
 * enable offline workflows.
 
-###Functionality
+### Functionality
 The system should support the following actions:
 1. creating a user
 2. updating a user
@@ -55,7 +55,7 @@ The system should support the following actions:
 
 The system should expose RESTful web APIs for actions 1-8.
 
-###Metrics:
+### Metrics:
 * for all APIs, the request-response cycle should be real-time ( ~500 ms)
 * the system should have an uptime of 99%
 * the system should support ~100k total users without performance variations.
@@ -63,7 +63,7 @@ The system should expose RESTful web APIs for actions 1-8.
 * the system should support ~20k simultaneous active users without performance variations.
 * the above SLAs should be true for any user located in our target geographical range (South Asia).
 
-###Proposed Solution
+### Proposed Solution
 * Since the overarching goal is to build the backend for a web app, the flows are data-driven. Our design therefore loosely follows the MVC design pattern which suits these flows.
 * The system will have 3 layers: 
     * The resources layer:  This layer is the only "public" face of the system. All of the APIs/web services are defined here. This layer should have as little business logic as possible, and instead try to delegate the heavy lifting to the layers below. It is the responsibility of this layer to:
@@ -75,7 +75,7 @@ The system should expose RESTful web APIs for actions 1-8.
     * models: all the data models (from a domain/business point of view) are defined here. A data model consists of the business entity itself (preferably defined as a class), as well as a contract through which CRUD operations will be supported on that entity, or a collection of such entities. A model is the deepest layer and has no awareness of the controller and views.
     * A definition which makes sense for the business domain might not be suitable from the database schema perspective . To enable decoupling these two, we propose an ORM layer which will manage the translation between the models and the database definitions. This arrangement gives us another advantage: we can cold-swap any data storage layer provided we can adhere to the CRUD contract defined by the model. All of this does come at the cost of increasing complexity though.
 
-###Tools and Frameworks:
+### Tools and Frameworks:
 
 * #### proposed
     * python 3.7 as the coding language
@@ -85,7 +85,7 @@ The system should expose RESTful web APIs for actions 1-8.
         * more modular
     * ORM: SQLAlchemy
     * object translation library: Marshmallow
-* ####alternatives considered
+* #### alternatives considered
     * Java as the coding language
         * strongly typed so better refactoring/compiler hinting
         * well-established concurrency model can be leveraged for better throughput
@@ -94,7 +94,7 @@ The system should expose RESTful web APIs for actions 1-8.
     * Django as the web framework
         * bundles everything - auth, ORM, object translation, design conventions etc.
 
-###Engineering Milestones
+### Engineering Milestones
 * Start Date: Sep 17, 2019
 * Milestone 1: New system MVP running in dark-mode: Sep 22, 2019
 * End: 
@@ -117,7 +117,7 @@ The system should expose RESTful web APIs for actions 1-8.
         * mention if it added/deleted a migration
         * mention if this feature warrants external documentation
 
-###Monitoring and Alerting
+### Monitoring and Alerting
 * QPS for web services
 * database operations per second
 * slow queries
@@ -127,19 +127,19 @@ The system should expose RESTful web APIs for actions 1-8.
 * alerts for metrics above threshold
 * might use tools like new relic
 
-###failover/HA
+### failover/HA
 * managed via multiple load balancers
 * Can either use HAProxy or commercial (citrix)
 * geo-distributed databases
 * master-slave architecture for all data stores for automated replication
 
-###User Interface
+### User Interface
 None.
 
-###API Interface
+### API Interface
 link to openapi 2.0 spec
 
-###Scaling strategies
+### Scaling strategies
 * horizontal scaling, load balanced
     * shared storage, i.e use databases
     * shared, distributed task queue
@@ -148,12 +148,12 @@ link to openapi 2.0 spec
 * specialised nosql databases
 * docker and kubernetes for easily replicating servers and orchestration
 
-###Speedup strategies
+### Speedup strategies
 * caching - browser, server, redis/memcached, bloom filters, cache-aside strategy
 * this system will have read-heavy loads. A master-slave architecture with high number of read-only slaves
 * non-ACID databases for faster reads, should guarantee eventual consistency. (CAP theorem)
 
-###Databases and schemas
+### Databases and schemas
 * A fully relational schema would be to create a table for the users, another one for the connections, and another for the recommendations. We will have ACID guarantees but lookups like 'find all users connected to this user' would be very expensive.
 * Social relationships as naturally modelled as graphs. We could move the connections data to a graph database like Neo4j to model the users as nodes and connections as edges.
 * User profile and recommendations could be kept in an RDBMS like MySQL or Postgres.
@@ -178,7 +178,7 @@ CREATE TABLE recommendations
 CREATE INDEX idx_user ON recommendations (user_id)
 ```
 
-###Deployment strategies
+### Deployment strategies
 * On-prem preferred over cloud
     * We don't expect sudden variations in traffic like News websites during an important event, or E-commerce websites during sale events.
     * Rapid upscaling and downscaling is not a goal to solve for, instead a steady growth in traffic is expected.
