@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-from flask import jsonify
 
 from server.app import api
-from server.exceptions import HttpError
 
 from server.resources import User, UserList, Connection, BatchConnection, Recommendation
 

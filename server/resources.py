@@ -7,7 +7,7 @@ from flask_restful import Resource
 
 from server import utils
 from server.controller import Controller
-from server.exceptions import HttpError, DataIntegrityException
+from server.exceptions import DataIntegrityException
 from server.models.entities import User
 from server.app import config, api
 
@@ -114,7 +114,7 @@ class User(Resource):
         except KeyError:
             message = "no record found for user: {}".format(user_id)
             logger.error(message)
-            raise HttpError(404, message)
+            return utils.format_error(message), 404
 
         resp_dict = {
             '_data': self.user_repr(user),
@@ -154,7 +154,7 @@ class UserList(Resource):
         except KeyError:
             message = "unable to parse one of the following: email, name, college"
             logger.error(message)
-            raise HttpError(400, message)
+            return utils.format_error(message), 400
 
         resp_dict = {
             '_data': User.user_repr(user),
@@ -281,7 +281,7 @@ class Connection(Resource):
         except KeyError:
             message = "add connection: expecting id in payload"
             logger.error(message)
-            raise HttpError(400, message)
+            return utils.format_error(message), 400
 
         resp_dict = {
             '_data': None,
@@ -311,7 +311,7 @@ class Connection(Resource):
         except KeyError:
             message = 'can only delete connections one at a time. Please specify user=<user_id> in query params.'
             logger.error(message)
-            raise HttpError(400, message)
+            return utils.format_error(message), 404
 
         controller.remove_connection(user_id, user_id_to_disconnect)
 
