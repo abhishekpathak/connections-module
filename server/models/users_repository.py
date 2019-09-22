@@ -110,7 +110,6 @@ class JsonUsersRepository(UsersRepository):
 
     def create(self, email: str, profile: Profile) -> User:
 
-        # TODO consider adding email uniqueness check?
         user = User(str(uuid.uuid4()), email, profile)
 
         self.users.append(user)
