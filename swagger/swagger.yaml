@@ -6,9 +6,9 @@ info:
   version: 1.0.0
 
 schemes:
-  - https
-host: api.socialapp.com
-basePath: /v1
+  - http
+host: localhost:5000
+basePath: /api/v1
 
 consumes:
   - application/json
