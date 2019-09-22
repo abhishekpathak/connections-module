@@ -7,10 +7,11 @@ from server.models.connections_repository import JsonConnectionsRepository
 from server.models.recommendations_repository import JsonRecommendationsRepository
 from server.models.users_repository import JsonUsersRepository
 
-PROJECT_ROOT = str(Path(os.getcwd()).parents[0])
+PROJECT_ROOT = str(Path(os.getcwd()).parents[1])
 
 # logging
 log_config_file = PROJECT_ROOT + os.sep + 'server' + os.sep + 'settings' + os.sep + 'log.yaml'
+print(log_config_file)
 
 usersRepository = JsonUsersRepository(PROJECT_ROOT + os.sep + 'ext' + os.sep + 'data.json')
 connectionsRepository = JsonConnectionsRepository(PROJECT_ROOT + os.sep + 'ext' + os.sep + 'data.json')
