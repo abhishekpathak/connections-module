@@ -4,10 +4,10 @@ import logging
 from typing import Set
 
 from server.app import config
-from server.models.connections_repository import ConnectionsRepository
-from server.models.entities import User, Profile
-from server.models.recommendations_repository import RecommendationsRepository
-from server.models.users_repository import UsersRepository
+from server.models import ConnectionsRepository
+from server.models import RecommendationsRepository
+from server.models import User, Profile
+from server.models import UsersRepository
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +182,7 @@ class Controller(object):
 
         """
 
-        #raise NotImplementedError() # commented out to allow the API to demonstrate its functionality.
+        # raise NotImplementedError() # commented out to allow the API to demonstrate its functionality.
         pass
 
     def remove_connection(self, user1: str, user2: str) -> None:

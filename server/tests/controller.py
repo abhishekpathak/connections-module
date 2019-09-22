@@ -2,10 +2,10 @@ import unittest
 from unittest.mock import MagicMock
 
 from server.controller import Controller
-from server.models.connections_repository import ConnectionsRepository
-from server.models.entities import User, Profile
-from server.models.recommendations_repository import RecommendationsRepository
-from server.models.users_repository import UsersRepository
+from server.ORM.json_connections_repository import ConnectionsRepository
+from server.models import User, Profile
+from server.ORM.json_recommendations_repository import RecommendationsRepository
+from server.ORM.json_users_repository import UsersRepository
 
 
 class TestController(unittest.TestCase):
