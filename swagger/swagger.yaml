@@ -1,0 +1,381 @@
+swagger: "2.0"
+
+info:
+  title: Connections  Module API
+  description: An API spec for the Connections module of SocialApp
+  version: 1.0.0
+
+schemes:
+  - https
+host: api.socialapp.com
+basePath: /v1
+
+consumes:
+  - application/json
+produces:
+  - application/json
+
+paths:
+  /users:
+    post:
+      summary: Adds a new user.
+      parameters:
+        - in: body
+          name: user
+          description: the user to create
+          schema:
+            type: object
+            required:
+              - email
+            properties:
+              name:
+                type: string
+                example: 'Michael Scott'
+              email:
+                type: string
+                example: 'mscott@dunder-mifflin.com'
+              college:
+                type: string
+                example: 'Scranton University'
+      responses:
+        '201':
+          description: User created successfully.
+          schema:
+            $ref: '#/definitions/UserDetailsResponse'
+          headers:
+            Location:
+              description: link to the created user
+              type: string
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '409':
+          $ref: '#/responses/Standard409ErrorResponse'
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'  
+  /users/{user_id}:
+    get:
+      summary: Gets a user by user ID.
+      parameters:
+        - $ref: '#/parameters/user_id'
+      responses:
+        '200':
+          description: User details fetched successfully.
+          schema:
+            $ref: '#/definitions/UserDetailsResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'
+    patch:
+      summary: Updates a user's profile details.
+      parameters:
+        - $ref: '#/parameters/user_id'
+        - in: body
+          name: patch
+          description: Json merge patch of the fields to update
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: 'Jim Halpert'
+              college:
+                type: string
+                example: 'Scranton University'
+      responses:
+        '200':
+          description: User details updated successfully
+          schema:
+            $ref: '#/definitions/UserDetailsResponse'
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+        '415':
+          $ref: '#/responses/Standard415ErrorResponse'
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'            
+  /users/{user_id}/connections:
+    get:
+      summary: Gets the connections of this user.
+      description: Paginated. The offset is 0 and the limit is 50 by default.
+      parameters:
+        - $ref: '#/parameters/user_id'
+        - in: query
+          name: offset
+          type: integer
+          default: 0
+          description: The number of items to skip before starting to collect the result set.
+        - in: query
+          name: limit
+          type: integer
+          default: 50
+          description: The numbers of items to return.
+      responses:
+        '200':
+          description: 1 page of connections fetched successfully. See _links in the response body for the next page.
+          schema:
+            $ref: '#/definitions/ConnectionDetailsResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'            
+    post:
+      summary: Adds a connection.
+      description: Creates a connection between the current user and the user specified in the request body.
+      parameters:
+        - $ref: '#/parameters/user_id'
+        - in: body
+          name: id
+          description: ID of the user to connect with.
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+      responses:
+        '201':
+          description: Connection added successfully.
+          schema:
+            $ref: '#/definitions/ConnectionDetailsResponse'
+        '409':
+          description: Cannot add connection. A connection already exists.
+          schema:
+            $ref: '#/definitions/Error'
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '403':
+          $ref: '#/responses/Standard403ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'          
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'    
+    delete:
+      summary: Removes a connection.
+      parameters:
+        - $ref: '#/parameters/user_id'
+        - in: query
+          name: user
+          description: the user id to delete the connection with
+          type: string
+      responses:
+        '204':
+          description: The connection has been successfully deleted.
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'          
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'
+  /users/{user_id}/connections/batch:
+    post:
+      summary: Adds multiple connections.
+      description: Creates connections between this user and all the users specified in the request body. This is a batch API which triggers an async task.
+      parameters:
+        - $ref: '#/parameters/user_id'
+        - in: body
+          name: ids
+          description: array, ids of the users to add
+          schema:
+            type: object
+            properties:
+              ids:
+                type: array
+                items:
+                  type: string
+      responses:
+        '202':
+          description: The batch operation to add connections has been accepted for processing.
+        '400':
+          $ref: '#/responses/Standard400ErrorResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'          
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'             
+  /users/{user_id}/recommendations:
+    get:
+      summary: Gets the connection recommendations.
+      description: Paginated.
+      parameters:
+        - $ref: '#/parameters/user_id'
+        - in: query
+          name: offset
+          type: integer
+          default: 0
+          description: The number of items to skip before starting to collect the result set.
+        - in: query
+          name: limit
+          type: integer
+          default: 50
+          description: The numbers of items to return.        
+      responses:
+        '200':
+          description: 1 page of recommendations fetched successfully. See _links in the response body for the next page.
+          schema:
+            $ref: '#/definitions/RecommendationDetailsResponse'
+        '401':
+          $ref: '#/responses/Standard401ErrorResponse'
+        '404':
+          $ref: '#/responses/Standard404ErrorResponse'
+        '500':
+          $ref: '#/responses/Standard500ErrorResponse'
+          
+definitions:
+  User:
+    required: 
+      - id
+      - name
+      - email
+      - college
+    properties:
+      id: 
+        type: string
+        example: '12345'
+      name:
+        type: string
+        example: 'Michael Scott'
+      email:
+        type: string
+        example: 'mscott@dundermifflin.com'
+      college:
+        type: string
+        example: 'Cornell University'
+  Connection:
+    required: 
+      - id
+      - name
+    properties:
+      id: 
+        type: string
+        example: '12345'
+      name:
+        type: string
+        example: 'Michael Scott'
+  Recommendation:
+    required: 
+      - id
+      - name
+    properties:
+      id: 
+        type: string
+        example: '23456'
+      name:
+        type: string 
+        example: 'Jim Halpert'
+  Link:
+    required: 
+      - rel
+      - href
+      - action
+      - types
+    properties:
+      rel:
+        type: string
+        example: 'self'
+      href:
+        type: string
+        example: '/api/v1/users/12345'
+      action:
+        type: string
+        example: 'GET'
+      content-types:
+        type: array
+        items: 
+          type: string
+          example: 'application/json'
+  Links:
+    type: array
+    items:
+      $ref: '#/definitions/Link'
+  Error:
+    properties:
+      _description:
+        type: string
+  UserDetailsResponse:      
+    required:
+      - _data
+      - _description
+      - _links
+    properties:
+      _data:
+        $ref: '#/definitions/User'
+      _description:
+        type: string
+      _links:
+        $ref: '#/definitions/Links'
+  ConnectionDetailsResponse:      
+    required:
+      - _data
+      - _description
+      - _links
+    properties:
+      _data:
+        type: array
+        items:
+          $ref: '#/definitions/Connection'
+      _description:
+        type: string
+      _links:
+        $ref: '#/definitions/Links'
+  RecommendationDetailsResponse:      
+    required:
+      - _data
+      - _description
+      - _links
+    properties:
+      _data:
+        $ref: '#/definitions/Recommendation'
+      _description:
+        type: string
+      _links:
+        $ref: '#/definitions/Links'      
+      
+responses:
+  Standard500ErrorResponse:
+    description: Unexpected server error.
+    schema:
+      $ref: '#/definitions/Error'
+  Standard400ErrorResponse:
+    description: Bad Request.
+    schema:
+      $ref: '#/definitions/Error'
+  Standard401ErrorResponse:
+    description: Unauthorized.
+    schema:
+      $ref: '#/definitions/Error'
+  Standard403ErrorResponse:
+    description: Forbidden.
+    schema:
+      $ref: '#/definitions/Error'      
+  Standard404ErrorResponse:
+    description: User not found.
+    schema:
+      $ref: '#/definitions/Error'
+  Standard409ErrorResponse:
+    description: Conflict.
+    schema:
+      $ref: '#/definitions/Error'
+  Standard415ErrorResponse:
+    description: Unsupported media type.
+    schema:
+      $ref: '#/definitions/Error'      
+      
+parameters:
+  user_id:
+    name: user_id
+    in: path
+    required: true
+    description: id of the user
+    type: string
