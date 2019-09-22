@@ -3,9 +3,9 @@
 import os
 from pathlib import Path
 
-from server.models.connections_repository import JsonConnectionsRepository
-from server.models.recommendations_repository import JsonRecommendationsRepository
-from server.models.users_repository import JsonUsersRepository
+from server.ORM.json_connections_repository import JsonConnectionsRepository
+from server.ORM.json_recommendations_repository import JsonRecommendationsRepository
+from server.ORM.json_users_repository import JsonUsersRepository
 
 PROJECT_ROOT = str(Path(os.getcwd()))
 
