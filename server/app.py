@@ -7,7 +7,6 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_restful import Api
 
-from server.exceptions import HttpError
 from server.settings import log
 
 app = Flask(__name__)
