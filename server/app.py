@@ -25,6 +25,3 @@ config = import_module('server.settings.' + mode)
 log.configure_logging(config.log_config_file)
 
 from server import views
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)

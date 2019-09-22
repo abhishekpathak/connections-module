@@ -3,7 +3,7 @@
 import logging
 from typing import Set
 
-from server import config
+from server.app import config
 from server.models.connections_repository import ConnectionsRepository
 from server.models.entities import User, Profile
 from server.models.recommendations_repository import RecommendationsRepository
