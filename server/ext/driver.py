@@ -12,10 +12,10 @@ import sys
 
 sys.path.append(str(Path(os.getcwd()).parents[0]))
 
-from server.ORM.json_connections_repository import JsonConnectionsRepository
+from server.models.connections_repository import JsonConnectionsRepository
 from server.controller import Controller
-from server.ORM.json_recommendations_repository import JsonRecommendationsRepository
-from server.ORM.json_users_repository import JsonUsersRepository
+from server.models.recommendations_repository import JsonRecommendationsRepository
+from server.models.users_repository import JsonUsersRepository
 from faker.providers import internet
 
 fake = Faker()

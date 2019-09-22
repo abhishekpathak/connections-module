@@ -5,11 +5,10 @@ from typing import List, Dict
 from flask import request
 from flask_restful import Resource
 
-from server.app import config, api
 from server.controller import Controller
-from server.exceptions import DataIntegrityException
-from server.models import User
-from server.utils import format_error
+from server.exceptions import HttpError, DataIntegrityException
+from server.models.entities import User
+from server.app import config, api
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +17,35 @@ controller = Controller(users_repository=config.usersRepository,
                         recommendations_repository=config.recommendationsRepository)
 
 
-class UserResource(Resource):
+def _check_user(user_id: str) -> User:
+    """ cross-checks if a user exists in the system.
+
+    Args:
+        user_id: id of the user to cross-check
+
+    Returns:
+        the user object if the user id exists in the system.
+        raises an exception if it does not.
+
+    """
+
+    try:
+        user = controller.get_user(user_id)
+        logger.info('verified that user id  exists.'.format(user_id))
+        return user
+    except KeyError:
+        message = "no record found for user: {}".format(user_id)
+        logger.error(message)
+        raise HttpError(404, message)
+
+
+class User(Resource):
     """ Exposes a User as a RESTful resource.
 
     """
 
     @staticmethod
-    def _json_mapper(user: User) -> Dict:
+    def user_repr(user: User) -> Dict:
         """ gets the json mapping for a user object.
 
         The json API representation of a user need not be coupled to the domain model of a user.
@@ -46,7 +67,7 @@ class UserResource(Resource):
         }
 
     @staticmethod
-    def _generate_hateoas_links(user_id: str) -> List[Dict]:
+    def hateoas_repr(user_id: str) -> List[Dict]:
         """  This method collects and returns all related resources as links.
 
         A link is the description of a resource. Each link contains sufficient information for a client
@@ -81,14 +102,13 @@ class UserResource(Resource):
             a response object (either directly or implicitly by the framework)
 
         """
-        user = controller.get_user(user_id)
-        if not user:
-            return format_error("no record of the user found in the system"), 404
+
+        user = _check_user(user_id)
 
         resp_dict = {
-            '_data': self._json_mapper(user),
+            '_data': self.user_repr(user),
             '_description': None,
-            '_links': self._generate_hateoas_links(user_id)
+            '_links': self.hateoas_repr(user_id)
         }
 
         return resp_dict
@@ -113,12 +133,12 @@ class UserResource(Resource):
         except KeyError:
             message = "no record found for user: {}".format(user_id)
             logger.error(message)
-            return format_error(message), 404
+            raise HttpError(404, message)
 
         resp_dict = {
-            '_data': self._json_mapper(user),
+            '_data': self.user_repr(user),
             '_description': None,
-            '_links': self._generate_hateoas_links(user_id)
+            '_links': self.hateoas_repr(user_id)
         }
 
         status = 200
@@ -128,7 +148,7 @@ class UserResource(Resource):
         return resp_dict, status, headers
 
 
-class UserListResource(Resource):
+class UserList(Resource):
     """ Exposes a group of User objects as a RESTful resource and lets you POST to add a new user.
 
     """
@@ -153,12 +173,12 @@ class UserListResource(Resource):
         except KeyError:
             message = "unable to parse one of the following: email, name, college"
             logger.error(message)
-            return format_error(message), 400
+            raise HttpError(400, message)
 
         resp_dict = {
-            '_data': UserResource._json_mapper(user),
+            '_data': User.user_repr(user),
             '_description': None,
-            '_links': UserResource._generate_hateoas_links(user.id)
+            '_links': User.hateoas_repr(user.id)
         }
 
         status = 201
@@ -168,13 +188,13 @@ class UserListResource(Resource):
         return resp_dict, status, headers
 
 
-class ConnectionResource(Resource):
+class Connection(Resource):
     """ Exposes a collection of Connection objects as a RESTful resource.
 
     """
 
     @staticmethod
-    def _json_mapper(user: User) -> Dict:
+    def connection_repr(user: User) -> Dict:
         """ gets the json mapping for a user object.
 
         The json API representation of a connection need not be coupled to its domain model.
@@ -194,7 +214,7 @@ class ConnectionResource(Resource):
         }
 
     @staticmethod
-    def _generate_hateoas_links(user_id: str):
+    def hateoas_repr(user_id: str):
         """  This method collects and returns all related resources as links.
 
         A link is the description of a resource. Each link contains sufficient information for a client
@@ -213,7 +233,7 @@ class ConnectionResource(Resource):
         return [
             {
                 'rel': 'self',
-                'href': api.url_for(ConnectionResource, user_id=user_id),
+                'href': api.url_for(User, user_id=user_id),
                 'action': 'GET',
                 'types': ['application/json']
             }
@@ -232,9 +252,7 @@ class ConnectionResource(Resource):
 
         """
 
-        user = controller.get_user(user_id)
-        if not user:
-            return format_error("no record of the user found in the system"), 404
+        _check_user(user_id)
 
         offset = int(request.args.get('offset', 0))
 
@@ -247,15 +265,15 @@ class ConnectionResource(Resource):
 
         link_for_next_page = {
             'rel': 'next',
-            'href': api.url_for(ConnectionResource, user_id=user_id, offset=offset + len(connected_users), limit=limit),
+            'href': api.url_for(Connection, user_id=user_id, offset=offset + len(connected_users), limit=limit),
             'action': 'GET',
             'types': ['application/json']
         }
 
         resp_dict = {
-            '_data': [self._json_mapper(user) for user in connected_users],
+            '_data': [self.connection_repr(user) for user in connected_users],
             '_description': None,
-            '_links': [link_for_next_page] + self._generate_hateoas_links(user_id)
+            '_links': [link_for_next_page] + self.hateoas_repr(user_id)
         }
 
         return resp_dict
@@ -271,21 +289,19 @@ class ConnectionResource(Resource):
 
         """
 
-        user = controller.get_user(user_id)
-        if not user:
-            return format_error("no record of the user found in the system"), 404
+        _check_user(user_id)
 
         try:
             user_id_to_connect = request.get_json()['id']
         except KeyError:
             message = "add connection: expecting id in payload"
             logger.error(message)
-            return format_error(message), 400
+            raise HttpError(400, message)
 
         resp_dict = {
             '_data': None,
             '_description': None,
-            '_links': self._generate_hateoas_links(user_id)
+            '_links': self.hateoas_repr(user_id)
         }
 
         try:
@@ -310,14 +326,14 @@ class ConnectionResource(Resource):
         except KeyError:
             message = 'can only delete connections one at a time. Please specify user=<user_id> in query params.'
             logger.error(message)
-            return format_error(message), 400
+            raise HttpError(400, message)
 
         controller.remove_connection(user_id, user_id_to_disconnect)
 
         return {}, 204
 
 
-class BatchConnectionResource(Resource):
+class BatchConnection(Resource):
 
     def post(self, user_id: str):
         """ creates multiple new connections for the current user.
@@ -336,19 +352,19 @@ class BatchConnectionResource(Resource):
         resp_dict = {
             '_data': None,
             '_description': None,
-            '_links': ConnectionResource._generate_hateoas_links(user_id)
+            '_links': Connection.hateoas_repr(user_id)
         }
 
         return resp_dict, 202
 
 
-class RecommendationResource(Resource):
+class Recommendation(Resource):
     """ Exposes a collection of Recommendation objects as a RESTful resource.
 
     """
 
     @staticmethod
-    def _json_mapper(user: User):
+    def recommendation_repr(user: User):
         """ gets the json mapping for a recommendation.
 
         The json API representation of a recommendation need not be coupled to its domain model.
@@ -368,7 +384,7 @@ class RecommendationResource(Resource):
         }
 
     @staticmethod
-    def _generate_hateoas_links(user_id: str):
+    def hateoas_repr(user_id: str):
         """  This method collects and returns all related resources as links.
 
         A link is the description of a resource. Each link contains sufficient information for a client
@@ -387,7 +403,7 @@ class RecommendationResource(Resource):
         return [
             {
                 'rel': 'self',
-                'href': api.url_for(RecommendationResource, user_id=user_id),
+                'href': api.url_for(User, user_id=user_id),
                 'action': 'GET',
                 'types': ['application/json']
             }
@@ -406,9 +422,7 @@ class RecommendationResource(Resource):
 
         """
 
-        user = controller.get_user(user_id)
-        if not user:
-            return format_error("no record of the user found in the system"), 404
+        _check_user(user_id)
 
         offset = int(request.args.get('offset', 0))
 
@@ -421,16 +435,15 @@ class RecommendationResource(Resource):
 
         link_for_next_page = {
             'rel': 'next',
-            'href': api.url_for(RecommendationResource, user_id=user_id, offset=offset + len(recommended_users),
-                                limit=limit),
+            'href': api.url_for(Recommendation, user_id=user_id, offset=offset + len(recommended_users), limit=limit),
             'action': 'GET',
             'types': ['application/json']
         }
 
         resp_dict = {
-            '_data': [self._json_mapper(user) for user in recommended_users],
+            '_data': [self.recommendation_repr(user) for user in recommended_users],
             '_description': None,
-            '_links': [link_for_next_page] + self._generate_hateoas_links(user_id)
+            '_links': [link_for_next_page] + self.hateoas_repr(user_id)
         }
 
         return resp_dict
