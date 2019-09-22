@@ -179,27 +179,9 @@ CREATE INDEX idx_user ON recommendations (user_id)
 * Containers like docker or LXE can be used for easy deployment and easy virtualization on different grades of bare-metal servers.
 * Kubernetes can be used to automatically orchestrate deployments and scale the platform as needed.
 
-### Testability and code hygiene
-* A test (unit + integration) coverage of 60% (or better) allows us a fair bit of regression while adding new features.
-* guidelines: for easy testability
-    * prefer composition over inheritance, and use dependency injections when creating classes.
-    * TDD is encouraged
-    * design loosely coupled systems for easy mocking
-    * make heavy use of logging. log all transactions between application layers (debug).
-* guidelines: for easily maintainable code
-    * use [PEP-8 naming conventions](https://www.python.org/dev/peps/pep-0008/#naming-conventions) for classes, methods, variables, constants, functions etc
-    * use [Google's python style guide](http://google.github.io/styleguide/pyguide.html) for code documentation.
-    * use [Angular's git commit message conventions](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines).
-    * APIs should be influenced by [Microsoft's API design guidelines](https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md).
-* guidelines: code reviews and pull requests
-    * ensure that there are no TODOs or commented blocks. 
-    * Any TODO intended to be tackled later should be added as a github issue.
-    * mention if it added/deleted a migration
-    * mention if this feature warrants external documentation
+### Conventions
+* using [PEP-8 naming conventions](https://www.python.org/dev/peps/pep-0008/#naming-conventions) for classes, methods, variables, constants, functions etc
+* using [Google's python style guide](http://google.github.io/styleguide/pyguide.html) for code documentation.
+* using [Angular's git commit message conventions](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines).
+* APIs influenced by [Microsoft's API design guidelines](https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md).
 
-### Engineering Milestones
-* Start Date: Sep 17, 2019
-* Milestone 1: New system MVP running in dark-mode: Sep 22, 2019
-* Milestone 2: Production
-    * scale: <= ~100k total users
-    * codebase metrics: TBD
