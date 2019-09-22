@@ -5,8 +5,7 @@ import logging
 import uuid
 
 from server.exceptions import DataIntegrityException
-from server.models.entities import Profile, User
-from server.models.users_repository import UsersRepository
+from server.models import Profile, User, UsersRepository
 
 logger = logging.getLogger(__name__)
 

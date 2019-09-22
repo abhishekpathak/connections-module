@@ -2,12 +2,10 @@
 
 import json
 import logging
-from abc import ABC, abstractmethod
 from typing import Iterable
 
 from server.exceptions import DataIntegrityException
-from server.models.entities import Recommendation
-from server.models.recommendations_repository import RecommendationsRepository
+from server.models import Recommendation, RecommendationsRepository
 
 logger = logging.getLogger(__name__)
 

@@ -6,8 +6,8 @@ import uuid
 from typing import Set, Iterable
 
 from server.exceptions import DataIntegrityException
-from server.models.connections_repository import ConnectionsRepository
-from server.models.entities import Connection
+
+from server.models import Connection, ConnectionsRepository
 
 logger = logging.getLogger(__name__)
 

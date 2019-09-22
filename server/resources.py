@@ -8,7 +8,7 @@ from flask_restful import Resource
 from server import utils
 from server.controller import Controller
 from server.exceptions import DataIntegrityException
-from server.models.entities import User
+from server.models import User
 from server.app import config, api
 
 logger = logging.getLogger(__name__)

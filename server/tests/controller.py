@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 from server.controller import Controller
 from server.models.connections_repository import ConnectionsRepository
-from server.models.entities import User, Profile
+from server.models import User, Profile
 from server.models.recommendations_repository import RecommendationsRepository
 from server.models.users_repository import UsersRepository
 
