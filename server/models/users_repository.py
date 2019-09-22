@@ -106,8 +106,6 @@ class JsonUsersRepository(UsersRepository):
 
         logger.error(message)
 
-        raise KeyError(message)
-
     def create(self, email: str, profile: Profile) -> User:
 
         user = User(str(uuid.uuid4()), email, profile)
