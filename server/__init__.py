@@ -3,10 +3,11 @@
 import os
 from importlib import import_module
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_restful import Api
 
+from server.exceptions import HttpError
 from server.settings import log
 
 app = Flask(__name__)
@@ -14,7 +15,7 @@ app = Flask(__name__)
 # enable CORS for this app
 CORS(app)
 
-api = Api(app)
+api = Api(app, catch_all_404s=True, prefix='/api/v1')
 
 # SOCIAL_APP_MODE can have values either 'prod' or 'dev'
 mode = os.environ.get('SOCIAL_APP_MODE', 'dev').lower()

@@ -117,7 +117,7 @@ class JsonConnectionsRepository(ConnectionsRepository):
             if connection.id == connection_id:
                 return connection
 
-        message = "connection not found: {}", connection_id
+        message = "connection not found: {}".format(connection_id)
 
         logger.error(message)
 
@@ -129,11 +129,9 @@ class JsonConnectionsRepository(ConnectionsRepository):
             if connection.users == users:
                 return connection
 
-        message = "connection not found: {}", users
+        message = "connection not found: {}".format(users)
 
         logger.error(message)
-
-        raise KeyError(message)
 
     def get_all(self, user: str, offset: int, limit: int) -> Iterable[Connection]:
 
@@ -152,7 +150,7 @@ class JsonConnectionsRepository(ConnectionsRepository):
             self.connections.append(connection)
             return connection
         else:
-            message = "connection already exists: {}", users
+            message = "connection already exists: {}".format(users)
             logger.error(message)
             raise DataIntegrityException(message)
 
@@ -163,7 +161,7 @@ class JsonConnectionsRepository(ConnectionsRepository):
                 self.connections.remove(connection)
                 return
 
-        message = "connection not found: {}", users
+        message = "connection not found: {}".format(users)
 
         logger.error(message)
 

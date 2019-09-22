@@ -69,7 +69,7 @@ class Controller(object):
 
         for item in kwargs:
             if item in updatable_fields:
-                logger.debug('field {} will be updated for user {}', item, user_id)
+                logger.debug('field {} will be updated for user {}'.format(item, user_id))
                 setattr(profile, item, kwargs[item])
 
         return self.usersRepository.update(user_id, profile)
@@ -91,7 +91,7 @@ class Controller(object):
 
         profile = Profile(name=name, college=college)
 
-        logger.info('a new user signed up with email: {}', email)
+        logger.info('a new user signed up with email: {}'.format(email))
 
         return self.usersRepository.create(email, profile)
 
@@ -106,7 +106,7 @@ class Controller(object):
 
         """
 
-        logger.info('deleting user {}', user_id)
+        logger.info('deleting user {}'.format(user_id))
 
         self.usersRepository.delete(user_id)
 
@@ -133,12 +133,12 @@ class Controller(object):
 
         for connection in connections_iterator:
             connected_user = connection.users.difference({user_id}).pop()
-            logger.debug('found connection with id: {} and users: {}. Connected user deduced is {}',
-                         connection.id, connection.users, connected_user)
+            logger.debug('found connection with id: {} and users: {}. Connected user deduced is {}'
+                         .format(connection.id, connection.users, connected_user))
             users.add(self.get_user(connected_user))
             # fail-safe in case the repository does not honor the limit
             if len(users) >= limit:
-                logger.warning('the data repository returned more than the limit: {}', limit)
+                logger.warning('the data repository returned more than the limit: {}'.format(limit))
                 break
 
         return users
@@ -161,9 +161,29 @@ class Controller(object):
 
         """
 
-        logger.info('adding a new connection between {} and {}', user1, user2)
+        logger.info('adding a new connection between {} and {}'.format(user1, user2))
 
         self.connectionsRepository.create({user1, user2})
+
+    def batch_add_connections(self, user: str, user_ids_to_connect: str) -> None:
+        """ adds a connection between two users (batch mode).
+
+        offloads the batch processing to a task queue. Should ideally return a job status to track.
+
+        Args:
+            user: the first user
+            user_ids_to_connect: a list of users to connect the first user to.
+
+            note that a connection is undirected. The prefixes (first, second) of the users are mere notations and do
+            not imply any kind of inherent order.
+
+        Returns:
+            None
+
+        """
+
+        #raise NotImplementedError() # commented out to allow the API to demonstrate its functionality.
+        pass
 
     def remove_connection(self, user1: str, user2: str) -> None:
         """ removes an (existing) connection between two users.
@@ -183,7 +203,7 @@ class Controller(object):
 
         """
 
-        logger.info('removing the connection between {} and {}', user1, user2)
+        logger.info('removing the connection between {} and {}'.format(user1, user2))
 
         self.connectionsRepository.delete({user1, user2})
 
@@ -230,12 +250,12 @@ class Controller(object):
         users = set()
 
         for recommendation in recommendations_iterator:
-            logger.debug('found recommendation with id: {}, user: {} and recommended user: {}',
-                         recommendation.id, recommendation.user, recommendation.recommended_user)
+            logger.debug('found recommendation with id: {}, user: {} and recommended user: {}'
+                         .format(recommendation.id, recommendation.user, recommendation.recommended_user))
             users.add(self.get_user(recommendation.recommended_user))
             # fail-safe in case the repository does not honor the limit
             if len(users) >= limit:
-                logger.warning('the data repository returned more than the limit: {}', limit)
+                logger.warning('the data repository returned more than the limit: {}'.format(limit))
                 break
 
         return users
@@ -257,7 +277,7 @@ class Controller(object):
         """
 
         for recommended_user in recommended_users:
-            logger.info('adding a new recommendation for {}: {}', user_id, recommended_user)
+            logger.info('adding a new recommendation for {}: {}'.format(user_id, recommended_user))
             self.recommendationsRepository.save(user_id, recommended_user)
 
     def delete_recommendations(self, user_id: str) -> None:
@@ -277,5 +297,5 @@ class Controller(object):
         recommendations = self.recommendationsRepository.get(user_id, offset=0, limit=50)
 
         for recommendation in recommendations:
-            logger.info('removing the recommendation for {}: {}', user_id, recommendation.recommended_user)
+            logger.info('removing the recommendation for {}: {}'.format(user_id, recommendation.recommended_user))
             self.recommendationsRepository.delete(recommendation.id)

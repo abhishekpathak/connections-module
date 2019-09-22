@@ -102,7 +102,7 @@ class JsonUsersRepository(UsersRepository):
             if user.id == user_id:
                 return user
 
-        message = "user not found: {}", user_id
+        message = "user not found: {}".format(user_id)
 
         logger.error(message)
 
@@ -132,7 +132,7 @@ class JsonUsersRepository(UsersRepository):
                 self.users.remove(existing_user)
                 break
 
-        message = "user not found: {}", user_id
+        message = "user not found: {}".format(user_id)
 
         logger.error(message)
 
