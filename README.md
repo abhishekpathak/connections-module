@@ -46,21 +46,22 @@ The system should support the following actions:
 2. updating a user
 3. adding a connection
 4. removing a connection
-5. checking if a user is connected to another user
-6. getting a user's profile information
-7. getting a user's connections
-8. getting a user's recommendations
-9. adding a user's recommendations
-10. deleting a user's recommendations
+5. adding multiple connections in a batch mode.
+6. checking if a user is connected to another user
+7. getting a user's profile information
+8. getting a user's connections
+9. getting a user's recommendations
+10. adding a user's recommendations
+11. deleting a user's recommendations
 
-The system should expose RESTful web APIs for actions 1-8.
+The system should expose RESTful web APIs for actions 1-9.
 
-### Metrics:
-* for all APIs, the request-response cycle should be real-time ( ~500 ms)
+### SLA's:
+* for all APIs, the request-response cycle should be within acceptable latency standards ( ~500 ms)
 * the system should have an uptime of 99%
 * the system should support ~100k total users without performance variations.
-* the system should support ~5k connections per user without performance variations.
-* the system should support ~20k simultaneous active users without performance variations.
+* the system should support ~5k connections/friends per user without performance variations.
+* the system should support ~70k simultaneous active users without performance variations.
 * the above SLAs should be true for any user located in our target geographical range (South Asia).
 
 ### Proposed Solution
@@ -74,7 +75,9 @@ The system should expose RESTful web APIs for actions 1-8.
     * controller: this acts as the interface between the view and the models. All the business logic and workflows are defined here. It is the responsibility of the controller to expose specific functionality that makes sense to the client. To execute a functionality, it 1) uses its business-awareness to come up with a multi-step procedure 2) asks the models to carry out actual CRUD on entities, in the order it wants, and keeps track of the results 3) optionally exposes the results to the view.
     * models: all the data models (from a domain/business point of view) are defined here. A data model consists of the business entity itself (preferably defined as a class), as well as a contract through which CRUD operations will be supported on that entity, or a collection of such entities. A model is the deepest layer and has no awareness of the controller and views.
     * A definition which makes sense for the business domain might not be suitable from the database schema perspective . To enable decoupling these two, we propose an ORM layer which will manage the translation between the models and the database definitions. This arrangement gives us another advantage: we can cold-swap any data storage layer provided we can adhere to the CRUD contract defined by the model. All of this does come at the cost of increasing complexity though.
+* The system will also support long-running operations via an offline tasks queue and workers.
 
+### Class Diagram
 ![Class Diagram](https://github.com/abhishekpathak/connections-module/blob/master/ClassDiagram.png)
 
 ### User Interface
@@ -109,21 +112,6 @@ CREATE TABLE recommendations
 
 CREATE INDEX idx_user ON recommendations (user_id)
 ```
-### Testability
-* 60% (or better) coverage through unit tests allows us a fair bit of regression while adding new features
-* design for testability
-    * use dependency injections
-    * TDD encouraged
-    * design loosely coupled systems for easy mocking
-    * Google's commenting guidelines
-    * Angular's git commit guidelines
-    * Microsoft's API design guidelines
-    * PEP-8 based naming conventions for classes, methods, variables, constants, functions etc
-    * make heavy use of logging. log all transactions between application layers (debug).
-    * code reviews
-        * No TODOs or commented blocks
-        * mention if it added/deleted a migration
-        * mention if this feature warrants external documentation
         
 ### Tools and Frameworks:
 * #### proposed
@@ -134,6 +122,7 @@ CREATE INDEX idx_user ON recommendations (user_id)
         * more modular
     * ORM: SQLAlchemy
     * object translation library: Marshmallow
+    * Celery as a distributed task queue with Redis as the message broker
 * #### alternatives considered
     * Java as the coding language
         * strongly typed so better refactoring/compiler hinting
@@ -148,41 +137,65 @@ CREATE INDEX idx_user ON recommendations (user_id)
 
 ### Scaling strategies
 * horizontal scaling, load balanced
-    * shared storage, i.e use databases
-    * shared, distributed task queue
-    * sticky sessions via cookies containing server hash, load balancer explicitly routes requests with sessions
-* master-slave architecture for routing reads and writes to db
-* specialised nosql databases
-* docker and kubernetes for easily replicating servers and orchestration
+* shared storage (databases)
+* shared, distributed task queue for all long-running tasks (for example, batch operations)
+* sticky sessions to be enabled through tokens and load balancer
+* NoSQL graph databases to model users and their connections. RDBMS for everything else.
+* Containers(docker) + Orchestrator(Kubernetes) based deployment for easy scaling.
 
 ### Speedup strategies
-* caching - browser, server, redis/memcached, bloom filters, cache-aside strategy
-* this system will have read-heavy loads. A master-slave architecture with high number of read-only slaves
-* non-ACID databases for faster reads, should guarantee eventual consistency. (CAP theorem)
+* caching to be done via a simple cache-aside strategy for v1. Redis preferred as a cache store due to its data type flexibility.
+* co-located application servers + databases + cache to reduce the network latency.
+* use CDN for static content. A pull CDN is preferred.
+* this system will have read-heavy loads. The RDBMS will have a master-slave architecture with high number of read-only slaves.
+* non-ACID databases for faster reads. The system can get by with eventual consistency.
 
 ### Monitoring and Alerting
-* QPS for web services
-* database operations per second
-* slow queries
-* spikes in RAM and CPU
-* avg latency for web services
-* health checks via heartbeats
-* alerts for metrics above threshold
-* might use tools like new relic
+* Metrics to monitor:
+    * web services
+        * QPS for web services
+        * avg latency for web services
+    * databases
+        * database operations per second
+        * slow queries
+    * hardware    
+        * health checks via heartbeats
+        * spikes (>90%) in RAM and CPU
+* Set up alerts for metrics above threshold.
 
-### failover/HA
-* managed via multiple load balancers
-* Can either use HAProxy or commercial (citrix)
-* geo-distributed databases
-* master-slave architecture for all data stores for automated replication
+### Failover/HA strategies
+* Multiple load balancers with a CDN should guarantee high availability.
+* No state should be stored on local hardware in the application.
+* Since it models a real-world social network, the data for `ConnectionsModule` needs to have high safety and availability.
+    * master-slave RDBMS architecture for live replication of production data
+    * geo-distributed databases
+    * regular, automated backups of databases
 
 ### Deployment strategies
-* On-prem preferred over cloud
+* On-prem preferred over cloud:
     * We don't expect sudden variations in traffic like News websites during an important event, or E-commerce websites during sale events.
     * Rapid upscaling and downscaling is not a goal to solve for, instead a steady growth in traffic is expected.
     * Security and privacy concerns: ConnectionsModule stores personal and private data of its users. A private data center will give us better control over our security policies and guarantees we can provide.
 * Containers like docker or LXE can be used for easy deployment and easy virtualization on different grades of bare-metal servers.
 * Kubernetes can be used to automatically orchestrate deployments and scale the platform as needed.
+
+### Testability and code hygiene
+* A test (unit + integration) coverage of 60% (or better) allows us a fair bit of regression while adding new features.
+* guidelines: for easy testability
+    * prefer composition over inheritance, and use dependency injections when creating classes.
+    * TDD is encouraged
+    * design loosely coupled systems for easy mocking
+    * make heavy use of logging. log all transactions between application layers (debug).
+* guidelines: for easily maintainable code
+    * use [PEP-8 naming conventions](https://www.python.org/dev/peps/pep-0008/#naming-conventions) for classes, methods, variables, constants, functions etc
+    * use [Google's python style guide](http://google.github.io/styleguide/pyguide.html) for code documentation.
+    * use [Angular's git commit message conventions](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines).
+    * APIs should be influenced by [Microsoft's API design guidelines](https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md).
+* guidelines: code reviews and pull requests
+    * ensure that there are no TODOs or commented blocks. 
+    * Any TODO intended to be tackled later should be added as a github issue.
+    * mention if it added/deleted a migration
+    * mention if this feature warrants external documentation
 
 ### Engineering Milestones
 * Start Date: Sep 17, 2019
