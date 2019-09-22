@@ -75,89 +75,21 @@ The system should expose RESTful web APIs for actions 1-8.
     * models: all the data models (from a domain/business point of view) are defined here. A data model consists of the business entity itself (preferably defined as a class), as well as a contract through which CRUD operations will be supported on that entity, or a collection of such entities. A model is the deepest layer and has no awareness of the controller and views.
     * A definition which makes sense for the business domain might not be suitable from the database schema perspective . To enable decoupling these two, we propose an ORM layer which will manage the translation between the models and the database definitions. This arrangement gives us another advantage: we can cold-swap any data storage layer provided we can adhere to the CRUD contract defined by the model. All of this does come at the cost of increasing complexity though.
 
-### Tools and Frameworks:
-
-* #### proposed
-    * python 3.7 as the coding language
-        * allows for rapid prototyping
-        * brilliant ecosystem of libraries and frameworks
-    * flask and flask-restful for building web services
-        * more modular
-    * ORM: SQLAlchemy
-    * object translation library: Marshmallow
-* #### alternatives considered
-    * Java as the coding language
-        * strongly typed so better refactoring/compiler hinting
-        * well-established concurrency model can be leveraged for better throughput
-        * similar ecosystem of 3rd party libraries and frameworks
-        * the JVM has rich tuning and monitoring capabilities.
-    * Django as the web framework
-        * bundles everything - auth, ORM, object translation, design conventions etc.
-
-### Engineering Milestones
-* Start Date: Sep 17, 2019
-* Milestone 1: New system MVP running in dark-mode: Sep 22, 2019
-* End: 
-    * scale: ~100k total users
-    * codebase metrics: TBD
-
-### Testability
-* 60% (or better) coverage through unit tests allows us a fair bit of regression while adding new features
-* design for testability
-    * use dependency injections
-    * TDD encouraged
-    * design loosely coupled systems for easy mocking
-    * Google's commenting guidelines
-    * Angular's git commit guidelines
-    * Microsoft's API design guidelines
-    * PEP-8 based naming conventions for classes, methods, variables, constants, functions etc
-    * make heavy use of logging. log all transactions between application layers (debug).
-    * code reviews
-        * No TODOs or commented blocks
-        * mention if it added/deleted a migration
-        * mention if this feature warrants external documentation
-
-### Monitoring and Alerting
-* QPS for web services
-* database operations per second
-* slow queries
-* spikes in RAM and CPU
-* avg latency for web services
-* health checks via heartbeats
-* alerts for metrics above threshold
-* might use tools like new relic
-
-### failover/HA
-* managed via multiple load balancers
-* Can either use HAProxy or commercial (citrix)
-* geo-distributed databases
-* master-slave architecture for all data stores for automated replication
+![Class Diagram](https://github.com/abhishekpathak/connections-module/blob/master/ClassDiagram.png)
 
 ### User Interface
 None.
 
 ### API Interface
-link to openapi 2.0 spec
-
-### Scaling strategies
-* horizontal scaling, load balanced
-    * shared storage, i.e use databases
-    * shared, distributed task queue
-    * sticky sessions via cookies containing server hash, load balancer explicitly routes requests with sessions
-* master-slave architecture for routing reads and writes to db
-* specialised nosql databases
-* docker and kubernetes for easily replicating servers and orchestration
-
-### Speedup strategies
-* caching - browser, server, redis/memcached, bloom filters, cache-aside strategy
-* this system will have read-heavy loads. A master-slave architecture with high number of read-only slaves
-* non-ACID databases for faster reads, should guarantee eventual consistency. (CAP theorem)
+OpenApi 2.0 spec available [here](https://github.com/abhishekpathak/connections-module/blob/master/swagger/swagger.yaml).
 
 ### Databases and schemas
 * A fully relational schema would be to create a table for the users, another one for the connections, and another for the recommendations. We will have ACID guarantees but lookups like 'find all users connected to this user' would be very expensive.
 * Social relationships as naturally modelled as graphs. We could move the connections data to a graph database like Neo4j to model the users as nodes and connections as edges.
 * User profile and recommendations could be kept in an RDBMS like MySQL or Postgres.
 * For testing, an in-memory object store like Redis could work, but we would lose ACID guarantees and the repository code would have to handle these cases.
+* Sample schema for MySQL:
+
 ```sql
 CREATE TABLE user_profiles
   (
@@ -177,6 +109,72 @@ CREATE TABLE recommendations
 
 CREATE INDEX idx_user ON recommendations (user_id)
 ```
+### Testability
+* 60% (or better) coverage through unit tests allows us a fair bit of regression while adding new features
+* design for testability
+    * use dependency injections
+    * TDD encouraged
+    * design loosely coupled systems for easy mocking
+    * Google's commenting guidelines
+    * Angular's git commit guidelines
+    * Microsoft's API design guidelines
+    * PEP-8 based naming conventions for classes, methods, variables, constants, functions etc
+    * make heavy use of logging. log all transactions between application layers (debug).
+    * code reviews
+        * No TODOs or commented blocks
+        * mention if it added/deleted a migration
+        * mention if this feature warrants external documentation
+        
+### Tools and Frameworks:
+* #### proposed
+    * python 3.7 as the coding language
+        * allows for rapid prototyping
+        * brilliant ecosystem of libraries and frameworks
+    * flask and flask-restful for building web services
+        * more modular
+    * ORM: SQLAlchemy
+    * object translation library: Marshmallow
+* #### alternatives considered
+    * Java as the coding language
+        * strongly typed so better refactoring/compiler hinting
+        * well-established concurrency model can be leveraged for better throughput
+        * similar ecosystem of 3rd party libraries and frameworks
+        * the JVM has rich tuning and monitoring capabilities.
+    * Django as the web framework
+        * bundles everything - auth, ORM, object translation, design conventions etc.        
+    
+### Architecture Diagram
+![Architecture Diagram](https://github.com/abhishekpathak/connections-module/blob/master/ArchitectureDiagram.png)
+
+### Scaling strategies
+* horizontal scaling, load balanced
+    * shared storage, i.e use databases
+    * shared, distributed task queue
+    * sticky sessions via cookies containing server hash, load balancer explicitly routes requests with sessions
+* master-slave architecture for routing reads and writes to db
+* specialised nosql databases
+* docker and kubernetes for easily replicating servers and orchestration
+
+### Speedup strategies
+* caching - browser, server, redis/memcached, bloom filters, cache-aside strategy
+* this system will have read-heavy loads. A master-slave architecture with high number of read-only slaves
+* non-ACID databases for faster reads, should guarantee eventual consistency. (CAP theorem)
+
+### Monitoring and Alerting
+* QPS for web services
+* database operations per second
+* slow queries
+* spikes in RAM and CPU
+* avg latency for web services
+* health checks via heartbeats
+* alerts for metrics above threshold
+* might use tools like new relic
+
+### failover/HA
+* managed via multiple load balancers
+* Can either use HAProxy or commercial (citrix)
+* geo-distributed databases
+* master-slave architecture for all data stores for automated replication
 
 ### Deployment strategies
 * On-prem preferred over cloud
@@ -185,3 +183,10 @@ CREATE INDEX idx_user ON recommendations (user_id)
     * Security and privacy concerns: ConnectionsModule stores personal and private data of its users. A private data center will give us better control over our security policies and guarantees we can provide.
 * Containers like docker or LXE can be used for easy deployment and easy virtualization on different grades of bare-metal servers.
 * Kubernetes can be used to automatically orchestrate deployments and scale the platform as needed.
+
+### Engineering Milestones
+* Start Date: Sep 17, 2019
+* Milestone 1: New system MVP running in dark-mode: Sep 22, 2019
+* Milestone 2: Production
+    * scale: <= ~100k total users
+    * codebase metrics: TBD
