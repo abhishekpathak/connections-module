@@ -5,6 +5,7 @@ from typing import List, Dict
 from flask import request
 from flask_restful import Resource
 
+from server import utils
 from server.controller import Controller
 from server.exceptions import HttpError, DataIntegrityException
 from server.models.entities import User
@@ -15,28 +16,6 @@ logger = logging.getLogger(__name__)
 controller = Controller(users_repository=config.usersRepository,
                         connections_repository=config.connectionsRepository,
                         recommendations_repository=config.recommendationsRepository)
-
-
-def _check_user(user_id: str) -> User:
-    """ cross-checks if a user exists in the system.
-
-    Args:
-        user_id: id of the user to cross-check
-
-    Returns:
-        the user object if the user id exists in the system.
-        raises an exception if it does not.
-
-    """
-
-    try:
-        user = controller.get_user(user_id)
-        logger.info('verified that user id  exists.'.format(user_id))
-        return user
-    except KeyError:
-        message = "no record found for user: {}".format(user_id)
-        logger.error(message)
-        raise HttpError(404, message)
 
 
 class User(Resource):
@@ -103,7 +82,9 @@ class User(Resource):
 
         """
 
-        user = _check_user(user_id)
+        user = controller.get_user(user_id)
+        if user is None:
+            return utils.format_error("the user ID was not found"), 404
 
         resp_dict = {
             '_data': self.user_repr(user),
@@ -252,7 +233,9 @@ class Connection(Resource):
 
         """
 
-        _check_user(user_id)
+        user = controller.get_user(user_id)
+        if user is None:
+            return utils.format_error("the user ID was not found"), 404
 
         offset = int(request.args.get('offset', 0))
 
@@ -289,7 +272,9 @@ class Connection(Resource):
 
         """
 
-        _check_user(user_id)
+        user = controller.get_user(user_id)
+        if user is None:
+            return utils.format_error("the user ID was not found"), 404
 
         try:
             user_id_to_connect = request.get_json()['id']
@@ -422,7 +407,9 @@ class Recommendation(Resource):
 
         """
 
-        _check_user(user_id)
+        user = controller.get_user(user_id)
+        if user is None:
+            return utils.format_error("the user ID was not found"), 404
 
         offset = int(request.args.get('offset', 0))
 
