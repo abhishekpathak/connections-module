@@ -30,6 +30,10 @@ class User(object):
 
         self.profile = profile
 
+    def __str__(self):
+        return "User: [id: {}, name: {}, email: {}, college: {}]"\
+            .format(self.id, self.profile.name, self.email, self.profile.college)
+
 
 class Connection(object):
     """ a connection links two users. It is an undirected link.
