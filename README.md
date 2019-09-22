@@ -112,6 +112,8 @@ CREATE TABLE recommendations
 
 CREATE INDEX idx_user ON recommendations (user_id)
 ```
+
+* I'm unable to provide a schema for the graph database (Neo4j) because I'm not familiar with it. 
         
 ### Tools and Frameworks:
 * #### proposed
@@ -185,3 +187,10 @@ CREATE INDEX idx_user ON recommendations (user_id)
 * using [Angular's git commit message conventions](https://github.com/angular/angular/blob/master/CONTRIBUTING.md#-commit-message-guidelines).
 * APIs influenced by [Microsoft's API design guidelines](https://github.com/Microsoft/api-guidelines/blob/master/Guidelines.md).
 
+### TODOs
+* [ ] add better HATEOAS links
+* [ ] add an annotation like @Authenticate to tackle authentication
+* [ ] delete connections api should be /connections
+* [ ] ORM should flush and load data to the json file after every operation. Add annotations for it: @LoadData, @FlushData
+* [ ] add convenience endpoints for login and signup: /login, /sign-up
+* [ ] batch connections api should return a return job status link
