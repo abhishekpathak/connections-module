@@ -24,7 +24,7 @@ class User(Resource):
     """
 
     @staticmethod
-    def user_repr(user: User) -> Dict:
+    def _json_mapper(user: User) -> Dict:
         """ gets the json mapping for a user object.
 
         The json API representation of a user need not be coupled to the domain model of a user.
@@ -46,7 +46,7 @@ class User(Resource):
         }
 
     @staticmethod
-    def hateoas_repr(user_id: str) -> List[Dict]:
+    def _generate_hateoas_links(user_id: str) -> List[Dict]:
         """  This method collects and returns all related resources as links.
 
         A link is the description of a resource. Each link contains sufficient information for a client
@@ -87,9 +87,9 @@ class User(Resource):
             return utils.format_error("the user ID was not found"), 404
 
         resp_dict = {
-            '_data': self.user_repr(user),
+            '_data': self._json_mapper(user),
             '_description': None,
-            '_links': self.hateoas_repr(user_id)
+            '_links': self._generate_hateoas_links(user_id)
         }
 
         return resp_dict
@@ -117,9 +117,9 @@ class User(Resource):
             return utils.format_error(message), 404
 
         resp_dict = {
-            '_data': self.user_repr(user),
+            '_data': self._json_mapper(user),
             '_description': None,
-            '_links': self.hateoas_repr(user_id)
+            '_links': self._generate_hateoas_links(user_id)
         }
 
         status = 200
@@ -157,9 +157,9 @@ class UserList(Resource):
             return utils.format_error(message), 400
 
         resp_dict = {
-            '_data': User.user_repr(user),
+            '_data': User._json_mapper(user),
             '_description': None,
-            '_links': User.hateoas_repr(user.id)
+            '_links': User._generate_hateoas_links(user.id)
         }
 
         status = 201
@@ -175,7 +175,7 @@ class Connection(Resource):
     """
 
     @staticmethod
-    def connection_repr(user: User) -> Dict:
+    def _json_mapper(user: User) -> Dict:
         """ gets the json mapping for a user object.
 
         The json API representation of a connection need not be coupled to its domain model.
@@ -195,7 +195,7 @@ class Connection(Resource):
         }
 
     @staticmethod
-    def hateoas_repr(user_id: str):
+    def _generate_hateoas_links(user_id: str):
         """  This method collects and returns all related resources as links.
 
         A link is the description of a resource. Each link contains sufficient information for a client
@@ -214,7 +214,7 @@ class Connection(Resource):
         return [
             {
                 'rel': 'self',
-                'href': api.url_for(User, user_id=user_id),
+                'href': api.url_for(Connection, user_id=user_id),
                 'action': 'GET',
                 'types': ['application/json']
             }
@@ -254,9 +254,9 @@ class Connection(Resource):
         }
 
         resp_dict = {
-            '_data': [self.connection_repr(user) for user in connected_users],
+            '_data': [self._json_mapper(user) for user in connected_users],
             '_description': None,
-            '_links': [link_for_next_page] + self.hateoas_repr(user_id)
+            '_links': [link_for_next_page] + self._generate_hateoas_links(user_id)
         }
 
         return resp_dict
@@ -286,7 +286,7 @@ class Connection(Resource):
         resp_dict = {
             '_data': None,
             '_description': None,
-            '_links': self.hateoas_repr(user_id)
+            '_links': self._generate_hateoas_links(user_id)
         }
 
         try:
@@ -337,7 +337,7 @@ class BatchConnection(Resource):
         resp_dict = {
             '_data': None,
             '_description': None,
-            '_links': Connection.hateoas_repr(user_id)
+            '_links': Connection._generate_hateoas_links(user_id)
         }
 
         return resp_dict, 202
@@ -349,7 +349,7 @@ class Recommendation(Resource):
     """
 
     @staticmethod
-    def recommendation_repr(user: User):
+    def _json_mapper(user: User):
         """ gets the json mapping for a recommendation.
 
         The json API representation of a recommendation need not be coupled to its domain model.
@@ -369,7 +369,7 @@ class Recommendation(Resource):
         }
 
     @staticmethod
-    def hateoas_repr(user_id: str):
+    def _generate_hateoas_links(user_id: str):
         """  This method collects and returns all related resources as links.
 
         A link is the description of a resource. Each link contains sufficient information for a client
@@ -388,7 +388,7 @@ class Recommendation(Resource):
         return [
             {
                 'rel': 'self',
-                'href': api.url_for(User, user_id=user_id),
+                'href': api.url_for(Recommendation, user_id=user_id),
                 'action': 'GET',
                 'types': ['application/json']
             }
@@ -428,9 +428,9 @@ class Recommendation(Resource):
         }
 
         resp_dict = {
-            '_data': [self.recommendation_repr(user) for user in recommended_users],
+            '_data': [self._json_mapper(user) for user in recommended_users],
             '_description': None,
-            '_links': [link_for_next_page] + self.hateoas_repr(user_id)
+            '_links': [link_for_next_page] + self._generate_hateoas_links(user_id)
         }
 
         return resp_dict
