@@ -7,7 +7,7 @@ info:
 
 schemes:
   - http
-host: 127.0.0.1:5000
+host: localhost:5000
 basePath: /api/v1
 
 consumes:
@@ -53,7 +53,7 @@ paths:
         '409':
           $ref: '#/responses/Standard409ErrorResponse'
         '500':
-          $ref: '#/responses/Standard500ErrorResponse'  
+          $ref: '#/responses/Standard500ErrorResponse'
   /users/{user_id}:
     get:
       summary: Gets a user by user ID.
@@ -100,11 +100,11 @@ paths:
         '415':
           $ref: '#/responses/Standard415ErrorResponse'
         '500':
-          $ref: '#/responses/Standard500ErrorResponse'            
+          $ref: '#/responses/Standard500ErrorResponse'
   /users/{user_id}/connections:
     get:
       summary: Gets the connections of this user.
-      description: Paginated. The offset is 0 and the limit is 50 by default.
+      description: Paginated.
       parameters:
         - $ref: '#/parameters/user_id'
         - in: query
@@ -127,7 +127,7 @@ paths:
         '404':
           $ref: '#/responses/Standard404ErrorResponse'
         '500':
-          $ref: '#/responses/Standard500ErrorResponse'            
+          $ref: '#/responses/Standard500ErrorResponse'
     post:
       summary: Adds a connection.
       description: Creates a connection between the current user and the user specified in the request body.
@@ -157,9 +157,9 @@ paths:
         '403':
           $ref: '#/responses/Standard403ErrorResponse'
         '404':
-          $ref: '#/responses/Standard404ErrorResponse'          
+          $ref: '#/responses/Standard404ErrorResponse'
         '500':
-          $ref: '#/responses/Standard500ErrorResponse'    
+          $ref: '#/responses/Standard500ErrorResponse'
     delete:
       summary: Removes a connection.
       parameters:
@@ -174,7 +174,7 @@ paths:
         '401':
           $ref: '#/responses/Standard401ErrorResponse'
         '404':
-          $ref: '#/responses/Standard404ErrorResponse'          
+          $ref: '#/responses/Standard404ErrorResponse'
         '500':
           $ref: '#/responses/Standard500ErrorResponse'
   /users/{user_id}/connections/batch:
@@ -201,9 +201,9 @@ paths:
         '401':
           $ref: '#/responses/Standard401ErrorResponse'
         '404':
-          $ref: '#/responses/Standard404ErrorResponse'          
+          $ref: '#/responses/Standard404ErrorResponse'
         '500':
-          $ref: '#/responses/Standard500ErrorResponse'             
+          $ref: '#/responses/Standard500ErrorResponse'
   /users/{user_id}/recommendations:
     get:
       summary: Gets the connection recommendations.
@@ -219,7 +219,7 @@ paths:
           name: limit
           type: integer
           default: 50
-          description: The numbers of items to return.        
+          description: The numbers of items to return.
       responses:
         '200':
           description: 1 page of recommendations fetched successfully. See _links in the response body for the next page.
@@ -231,18 +231,18 @@ paths:
           $ref: '#/responses/Standard404ErrorResponse'
         '500':
           $ref: '#/responses/Standard500ErrorResponse'
-          
+
 definitions:
   User:
-    required: 
+    required:
       - id
       - name
       - email
       - college
     properties:
-      id: 
+      id:
         type: string
-        example: '12345'
+        example: 'sarahdavis'
       name:
         type: string
         example: 'Michael Scott'
@@ -253,29 +253,29 @@ definitions:
         type: string
         example: 'Cornell University'
   Connection:
-    required: 
+    required:
       - id
       - name
     properties:
-      id: 
+      id:
         type: string
-        example: '12345'
+        example: 'ltaylor'
       name:
         type: string
         example: 'Michael Scott'
   Recommendation:
-    required: 
+    required:
       - id
       - name
     properties:
-      id: 
+      id:
         type: string
-        example: '23456'
+        example: 'rryan'
       name:
-        type: string 
+        type: string
         example: 'Jim Halpert'
   Link:
-    required: 
+    required:
       - rel
       - href
       - action
@@ -292,7 +292,7 @@ definitions:
         example: 'GET'
       content-types:
         type: array
-        items: 
+        items:
           type: string
           example: 'application/json'
   Links:
@@ -303,7 +303,7 @@ definitions:
     properties:
       _description:
         type: string
-  UserDetailsResponse:      
+  UserDetailsResponse:
     required:
       - _data
       - _description
@@ -315,7 +315,7 @@ definitions:
         type: string
       _links:
         $ref: '#/definitions/Links'
-  ConnectionDetailsResponse:      
+  ConnectionDetailsResponse:
     required:
       - _data
       - _description
@@ -329,19 +329,21 @@ definitions:
         type: string
       _links:
         $ref: '#/definitions/Links'
-  RecommendationDetailsResponse:      
+  RecommendationDetailsResponse:
     required:
       - _data
       - _description
       - _links
     properties:
       _data:
-        $ref: '#/definitions/Recommendation'
+        type: array
+        items:
+          $ref: '#/definitions/Recommendation'
       _description:
         type: string
       _links:
-        $ref: '#/definitions/Links'      
-      
+        $ref: '#/definitions/Links'
+
 responses:
   Standard500ErrorResponse:
     description: Unexpected server error.
@@ -358,7 +360,7 @@ responses:
   Standard403ErrorResponse:
     description: Forbidden.
     schema:
-      $ref: '#/definitions/Error'      
+      $ref: '#/definitions/Error'
   Standard404ErrorResponse:
     description: User not found.
     schema:
@@ -370,8 +372,8 @@ responses:
   Standard415ErrorResponse:
     description: Unsupported media type.
     schema:
-      $ref: '#/definitions/Error'      
-      
+      $ref: '#/definitions/Error'
+
 parameters:
   user_id:
     name: user_id
