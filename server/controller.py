@@ -90,7 +90,13 @@ class Controller(object):
 
         logger.info('a new user signed up with email: {}'.format(email))
 
-        return self.usersRepository.create(email, profile)
+        user = self.usersRepository.create(email, profile)
+
+        recommendations = self._seed_initial_recommendations()
+
+        self.add_recommendations(user.id, recommendations)
+
+        return user
 
     def remove_user(self, user_id: str) -> None:
         """ removes a user from the system.
@@ -296,3 +302,13 @@ class Controller(object):
         for recommendation in recommendations:
             logger.info('removing the recommendation for {}: {}'.format(user_id, recommendation.recommended_user))
             self.recommendationsRepository.delete(recommendation.id)
+
+    def _seed_initial_recommendations(self) -> Set[str]:
+        """ generates some initial recommendations for the newly-created user.
+
+        In production, this method would call a recommender system. Here we are just stubbing it out.
+
+        """
+        recommended_users = {'rryan', 'sarahdavis'}
+
+        return recommended_users

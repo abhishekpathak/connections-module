@@ -2,6 +2,7 @@
 
 import json
 import logging
+import uuid
 from typing import Iterable
 
 from server.exceptions import DataIntegrityException
@@ -46,7 +47,9 @@ class JsonRecommendationsRepository(RecommendationsRepository):
 
     def save(self, user: str, recommended_user: str) -> Recommendation:
 
-        raise NotImplementedError()
+        recommendation = Recommendation(recommendation_id=str(uuid.uuid4()), user=user, recommended_user=recommended_user)
+        self.recommendations.add(recommendation)
+        return Recommendation
 
     def delete(self, recommendation_id: str) -> None:
 
