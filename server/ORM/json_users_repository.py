@@ -4,10 +4,16 @@ import json
 import logging
 import uuid
 
+from faker import Faker
+from faker.providers import internet
+
 from server.exceptions import DataIntegrityException
 from server.models import Profile, User, UsersRepository
 
 logger = logging.getLogger(__name__)
+
+fake = Faker()
+fake.add_provider(internet)
 
 class JsonUsersRepository(UsersRepository):
 
@@ -45,7 +51,7 @@ class JsonUsersRepository(UsersRepository):
 
     def create(self, email: str, profile: Profile) -> User:
 
-        user = User(str(uuid.uuid4()), email, profile)
+        user = User(fake.user_name(), email, profile)
 
         self.users.append(user)
 
